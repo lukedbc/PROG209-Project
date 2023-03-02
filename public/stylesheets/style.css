@@ -1,0 +1,66 @@
+.container-full {
+    background-image: url("../images/cook.jpg");
+    color: wheat;
+}
+
+.container-top {
+    text-align: center;
+}
+
+.home-title {
+    background-color: rgb(81, 34, 126);
+    font-family: cursive;
+    font-size: larger;
+}
+
+.description {
+    background-color: rgb(32, 32, 122);
+    font-family: system-ui;
+}
+
+.container-bottom {
+    font-family: system-ui;
+}
+
+.learn-more {
+    background-color: rgb(92, 29, 29);
+}
+
+.requirements {
+    background-color: rgb(16, 71, 16);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.signInInfo {
+    color: red;
+}
+
+
+.gallery {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.gallery img {
+  width: 100%;
+}
+
+/*#join-a-team-content-matrix {
+  color: black;
+  background-color: black;
+}*/
