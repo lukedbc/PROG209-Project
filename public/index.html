@@ -141,7 +141,8 @@
         <div data-role="content" data-theme='e' id="sign-up-content">
             <div>
                 <div style="display: flex; flex-wrap: wrap;">
-                    <a style="flex: 50%" href="#sign-in-popup" data-rel="popup" data-transition="pop">Already signed
+                    <a id="ask-for-signed-up" style="flex: 50%" href="#sign-in-popup" data-rel="popup"
+                        data-transition="pop">Already signed
                         up?</a>
                     <div data-role="popup" id="sign-in-popup">
                         <div role="main" class="ui-content">
@@ -357,10 +358,10 @@
                 <button class="ui-btn ui-corner-all" id="sign-up-list-btn">Sign up list</button>
                 <ul id="sign-up-list" />
             </div>
-            <div>
-                <button class="ui-btn ui-corner-all" id="contact-list-btn">Contact list</button>
-                <ul id="contact-list" />
-            </div>
+            <!-- <div> -->
+            <!--     <button class="ui-btn ui-corner-all" id="contact-list-btn">Contact list</button> -->
+            <!--     <ul id="contact-list" /> -->
+            <!-- </div> -->
 
             <div data-role="popup" id="popup-sign-in-info">
                 <label for="one_sID">Student ID</label>
@@ -383,14 +384,14 @@
                     above?</label>
                 <textarea id="one_extra" readonly></textarea><br>
             </div>
-            <div data-role="popup" id="popup-contact-info">
-                <label for="one_name">Name</label>
-                <input type="text" id="one_name" readonly><br>
-                <label for="one_email">Email</label>
-                <input type="text" id="one_email" readonly><br>
-                <label for="one_message">Message</label>
-                <input type="text" id="one_message" readonly><br>
-            </div>
+            <!-- <div data-role="popup" id="popup-contact-info"> -->
+            <!--     <label for="one_name">Name</label> -->
+            <!--     <input type="text" id="one_name" readonly><br> -->
+            <!--     <label for="one_email">Email</label> -->
+            <!--     <input type="text" id="one_email" readonly><br> -->
+            <!--     <label for="one_message">Message</label> -->
+            <!--     <input type="text" id="one_message" readonly><br> -->
+            <!-- </div> -->
         </div>
         <!-- =================================== -->
 
@@ -459,10 +460,8 @@
     </div>
     <script src="javascripts/helper.js"></script>
     <script src="javascripts/contestantClass.js"></script>
-    <script src="javascripts/contact-entity.js"></script>
     <script src="javascripts/contactDish.js"></script>
     <script src="javascripts/storage.js"></script>
-    <script src="javascripts/member-slot.js"></script>
     <script src="javascripts/matrix.js"></script>
     <script src="javascripts/main.js"></script>
 </body>

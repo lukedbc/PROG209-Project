@@ -1,15 +1,17 @@
 const authorizeUrl = ["#join-a-team", "#signature-dishes", "#dashboard"]
-const signUpStorage = new Storage("sign-up-data", JSON.parse(getValueFromCache("sign-up-data")));
-const contactStorage = new Storage("contact-data", JSON.parse(getValueFromCache("contact-data")));
 const dishStorage = new Storage("dish-data", JSON.parse(getValueFromCache("dish-data")));
 
-const memberSlotStorage = new Storage("member-slot-data", new MemberSlot({
-    _numberOfTeam: NUMBER_OF_TEAM,
-    _numberOfMemberEachTeam: NUMBER_MEMBER_EACH_TEAM
-}));
 
 let currentSignUpEntity;
 let signInFlag = false;
+
+function fetchCurrentSignInEntity() {
+    const value = getValueFromCache("sign-in-entity");
+    if (value) {
+        return makeContestantFromCache(JSON.parse(value));
+    }
+    return null;
+}
 
 function toggleContent({ show }) {
     if (show === true) {
@@ -34,28 +36,37 @@ function displayUserInfo() {
 
 function handleSignUp(e) {
     handleInputTemplate(e, function(_) {
-        let signUpEntity = new Contestant({
+        let signUpEntity = {
             _studentId: getValueFromInputElement("sID"),
             _firstName: getValueFromInputElement("firstName"),
             _lastName: getValueFromInputElement("lastName"),
             _gender: getValueFromInputElement("gender"),
+            _major: getValueFromInputElement("major"),
             _dob: getValueFromInputElement("birthday"),
             _experience: getValueFromInputElement("background"),
             _reason: getValueFromInputElement("reason"),
             _other: getValueFromInputElement("extra"),
-        });
+        };
 
-        if (signUpEntity.isValid()) {
-            signUpStorage.add(signUpEntity);
-            currentSignUpEntity = signUpEntity;
-            signInFlag = true;
-            alert("Sign up sucessful!");
-            signUpStorage.saveToCache();
+        $.ajax({
+            type: "POST",
+            url: "/users/sign-up",
+            data: signUpEntity,
+        }).done(function(msg) {
+            putValueToCache("sign-in-entity", JSON.stringify(msg));
+            currentSignUpEntity = fetchCurrentSignInEntity();
             toggleContent({ show: true });
             getElement("dish-display").innerHTML = "";
 
+            signInFlag = true;
+            alert("Sign up sucessful!");
             window.location = "#join-a-team";
-        }
+        }).fail(function(err) {
+            if (!err.responseText) {
+                alert("Something went wrong when signed up. Try it later");
+            }
+            alert(err.responseText);
+        });
     })
 }
 
@@ -115,45 +126,30 @@ function handleShowDish(_) {
     });
 }
 
-function handleContact(e) {
-    handleInputTemplate(e, function(_) {
-        let contact = new ContactEntity({
-            _name: getValueFromInputElement("name"),
-            _email: getValueFromInputElement("email"),
-            _message: getValueFromInputElement("message")
-        });
-
-        if (contact.isValid()) {
-            contactStorage.add(contact);
-            alert("Received your message!");
-            contactStorage.saveToCache();
-        }
-    })
-}
-
 function handleSignIn(e) {
     handleInputTemplate(e, function(_) {
 
         let signIn = {
-            _studentId: getValueFromInputElement("si_sID"),
-            _firstName: getValueFromInputElement("si_firstName"),
-            _lastName: getValueFromInputElement("si_lastName")
+            studentId: getValueFromInputElement("si_sID"),
+            firstName: getValueFromInputElement("si_firstName"),
+            lastName: getValueFromInputElement("si_lastName")
         };
-
-        let signInFromCache = signUpStorage.find(function(signUp) {
-            return signUp.m_studentId === signIn._studentId;
-        });
-
-        if (signInFromCache
-            && signInFromCache.m_firstName === signIn._firstName
-            && signInFromCache.m_lastName === signIn._lastName) {
-            currentSignUpEntity = makeContestantFromCache(signInFromCache);
+        // call HTTP sign in request 
+        $.ajax({
+            type: "POST",
+            url: "/users/sign-in",
+            data: signIn,
+        }).done(function(msg) {
+            putValueToCache("sign-in-entity", JSON.stringify(msg));
+            currentSignUpEntity = fetchCurrentSignInEntity();
+            toggleContent({ show: true });
+            getElement("dish-display").innerHTML = "";
 
             signInFlag = true;
             window.location = "#join-a-team";
-            return;
-        }
-        alert("No Registration Record Found");
+        }).fail(function(err) {
+            alert("No Registration Record Found");
+        })
     });
 }
 
@@ -175,27 +171,23 @@ function fillContactToPopup(model) {
 }
 
 function handleSignUpListBtn(_) {
-    show("sign-up-list", signUpStorage, "popup-sign-in-info", function(model) {
-        return `${model.m_createdDate}: Name - ${model.m_firstName} ${model.m_lastName}, DOB: ${model.m_dob}`;
-    }, function(model) {
-        fillSignInInfoToPopup(model);
-    });
+    $.ajax({
+        type: "GET",
+        url: "/users/list",
+    }).done(function(data) {
+        show("sign-up-list", data, "popup-sign-in-info", function(model) {
+            return `${model.m_createdDate}: Name - ${model.m_firstName} ${model.m_lastName}, DOB: ${model.m_dob}`;
+        }, function(model) {
+            fillSignInInfoToPopup(model);
+        });
+    }).fail(function(err) {
+        alert("No Record Found");
+    })
 }
 
-function handleContactListBtn(_) {
-    show("contact-list", contactStorage, "popup-contact-info", function(model) {
-        return `${model.m_createdDate} - From ${model.m_name} - ${model.m_email}: ${model.m_message}`;
-    }, function(model) {
-        fillContactToPopup(model);
-    });
-}
-
-function show(elementId, storage, popupId, toStringFunction, clickHandleFunction) {
-    storage.syncWithCache();
+function show(elementId, data, popupId, toStringFunction, clickHandleFunction) {
     let rootElement = getElement(elementId);
     rootElement.innerHTML = "";
-
-    const data = storage.getAll();
     data.forEach(function(dataAsString, index) {
         let liElement = document.createElement("li");
         liElement.setAttribute("id", elementId + "-" + index);
@@ -231,60 +223,71 @@ function initMatrix() {
 
     drawMatrixTo("join-a-team-content-matrix");
     // sync cache 
-    memberSlotStorage.syncWithCacheByConverter(function(rawStorage) {
-        let data = createMemberSlotFromCache(rawStorage.m_data);
-        let memberSlot = new MemberSlot({});
-        memberSlot.m_data = data;
-        return memberSlot;
-    });
-
-    if (memberSlotStorage.getAll().length === 0) {
-        memberSlotStorage.assignData(new MemberSlot({
-            _numberOfTeam: NUMBER_OF_TEAM,
-            _numberOfMemberEachTeam: NUMBER_MEMBER_EACH_TEAM
-        }));
-    }
-
     // update matrix with new data
-    updateWithMemberSlot(memberSlotStorage.getAll());
 
-    for (let memberOrder = 1; memberOrder <= NUMBER_MEMBER_EACH_TEAM; memberOrder++) {
-        for (let team = 1; team <= NUMBER_OF_TEAM; team++) {
-            addEventToSlot({
-                _team: team,
-                _memberOrder: memberOrder,
-                _handleFunction:
-                    function() {
-                        let memberSlot = memberSlotStorage.getAll();
-
-                        if (memberSlot.assignWithSignUpInfo(team, memberOrder, currentSignUpEntity)) {
-                            getElement("team-" + team + "-member-" + memberOrder).innerText =
-                                currentSignUpEntity.m_name;
-                            alert("Sign up successful!");
-                            // save to cache
-                            memberSlotStorage.assignData(memberSlot); // override all old data;
-                            memberSlotStorage.saveToCache();
+    $.ajax({
+        type: "GET",
+        url: "/member-slot/info",
+    }).done(function(data) {
+        updateWithMemberSlot(data);
+        for (let memberOrder = 1; memberOrder <= NUMBER_MEMBER_EACH_TEAM; memberOrder++) {
+            for (let team = 1; team <= NUMBER_OF_TEAM; team++) {
+                addEventToSlot({
+                    _team: team,
+                    _memberOrder: memberOrder,
+                    _handleFunction:
+                        function() {
+                            const newText = currentSignUpEntity.m_firstName + " " + currentSignUpEntity.m_lastName + ". Major: " + currentSignUpEntity.m_major;
+                            $.ajax({
+                                type: "POST",
+                                url: "/member-slot/assign",
+                                data: {
+                                    team: team,
+                                    memberOrder: memberOrder,
+                                    text: newText,
+                                    contestantId: currentSignUpEntity.m_id
+                                }
+                            }).done(function(msg) {
+                                if (msg === "success") {
+                                    location.reload(true);
+                                }
+                            }).fail(function(err) {
+                                if (!err) {
+                                    alert("Something went wrong when assigned slot. Try again later");
+                                    return;
+                                }
+                                alert(err.responseText);
+                            });
                         }
-                    }
-            });
+                });
+            }
         }
-    }
+    }).fail(function(err) {
+        alert("No Record Found");
+    })
+
 }
 
 
 function checkSignInStatus() {
     let url = window.location.href;
+    if (signInFlag == false) {
+        currentSignUpEntity = fetchCurrentSignInEntity();
+        if (currentSignUpEntity && currentSignUpEntity.m_id) {
+            signInFlag = true;
+        }
+    }
     if (signInFlag === true) {
         displayUserInfo();
     }
     let match = authorizeUrl.find(_url => url.endsWith(_url));
     if (match && signInFlag === false) {
         alert("You must sign in first");
-        toggleContent({ show: false });
+        toggleContent({ show: signInFlag });
         return;
     }
     if (match && signInFlag === true) {
-        toggleContent({ show: true });
+        toggleContent({ show: signInFlag });
         if (match !== "#signature-dishes") {
             getElement("dish-display").innerHTML = "";
         }
@@ -297,10 +300,8 @@ document.addEventListener("DOMContentLoaded", function(_) {
     initMatrix();
     getElement("sign-up-btn").addEventListener("click", handleSignUp);
     getElement("sign-in-btn").addEventListener("click", handleSignIn);
-    getElement("contact-us-btn").addEventListener("click", handleContact);
 
     getElement("sign-up-list-btn").addEventListener("click", handleSignUpListBtn);
-    getElement("contact-list-btn").addEventListener("click", handleContactListBtn);
 
     getElement("add-recipe-btn").addEventListener("click", handleAddDish);
     getElement("your-dishes-btn").addEventListener("click", handleShowDish);

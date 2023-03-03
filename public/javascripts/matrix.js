@@ -38,7 +38,7 @@ function drawMatrixTo(elementId) {
 }
 
 function updateWithMemberSlot(memberSlot) {
-    const data = memberSlot.m_data;
+    const data = memberSlot;
     for (let i = 0, numberOfTeam = data.length; i < numberOfTeam; i++) {
         for (let j = 0, numberOfMemberEachTeam = data[i].length; j < numberOfMemberEachTeam; j++) {
             getElement("team-" + (i + 1) + "-member-" + (j + 1)).innerText = data[i][j].m_text;

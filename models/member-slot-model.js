@@ -1,18 +1,5 @@
-function Slot({
-    _text = "Available to join",
-    _slotTaken = false,
-    _contestantId = ""
-}) {
-    this.m_text = _text;
-    this.m_slotTaken = _slotTaken;
-    this.m_constestantId = _contestantId;
-}
-
-function MemberSlot({
-    _numberOfTeam = NUMBER_OF_TEAM,
-    _numberOfMemberEachTeam = NUMBER_MEMBER_EACH_TEAM
-}) {
-    this.m_data = generateDefaultMemeberSlot(_numberOfTeam, _numberOfMemberEachTeam);
+function MemberSlot(data) {
+    this.m_data = data;
 }
 
 function generateDefaultMemeberSlot(numberOfTeam, numberOfMemberEachTeam) {
@@ -20,22 +7,11 @@ function generateDefaultMemeberSlot(numberOfTeam, numberOfMemberEachTeam) {
     for (let i = 0; i < numberOfTeam; i++) {
         result[i] = [];
         for (let j = 0; j < numberOfMemberEachTeam; j++) {
-            result[i][j] = new Slot({});
-        }
-    }
-    return result;
-}
-
-function createMemberSlotFromCache(data) {
-    let result = [];
-    for (let i = 0, numberOfTeam = data.length; i < numberOfTeam; i++) {
-        result[i] = [];
-        for (let j = 0, numberOfMemberEachTeam = data[i].length; j < numberOfMemberEachTeam; j++) {
-            result[i][j] = new Slot({
-                _text: data[i][j].m_text,
-                _slotTaken: data[i][j].m_slotTaken,
-                _contestantId: data[i][j].m_constestantId
-            });
+            result[i][j] = {
+                m_text: "Available to join",
+                m_slotTaken: false,
+                m_constestantId: ""
+            };
         }
     }
     return result;
@@ -50,13 +26,11 @@ MemberSlot.prototype.assignMatrixSlot = function({
     let slot = this.m_data[_team - 1][_memberOrder - 1];
 
     if (!slot) {
-        console.log(`Slot ${_team}-${_memberOrder} is not found`);
-        return false;
+        return { status: false, message: `Slot ${_team}-${_memberOrder} is not found` };
     }
 
     if (slot.m_slotTaken) {
-        alert("This spot is taken");
-        return false;
+        return { status: false, message: "This spot is taken" };
     }
 
     let constestantJoinStatus = this.find(function(slot) {
@@ -64,8 +38,7 @@ MemberSlot.prototype.assignMatrixSlot = function({
     });
 
     if (constestantJoinStatus) { // did join;
-        alert("You've already signed up");
-        return false;
+        return { status: false, message: "You've already signed up" };
     }
 
     slot.m_text = _newText;
@@ -73,16 +46,7 @@ MemberSlot.prototype.assignMatrixSlot = function({
     slot.m_constestantId = _contestantId;
 
     this.m_data[_team - 1][_memberOrder - 1] = slot;
-    return true;
-}
-
-MemberSlot.prototype.assignWithSignUpInfo = function(team, memberOrder, signUpInfo) {
-    return this.assignMatrixSlot({
-        _team: team,
-        _memberOrder: memberOrder,
-        _newText: signUpInfo.m_name,
-        _contestantId: signUpInfo.m_id
-    })
+    return { status: true, message: "success" };
 }
 
 MemberSlot.prototype.getSlot = function(team, memberOrder) {
@@ -109,3 +73,5 @@ MemberSlot.prototype.find = function(filterFunction) {
     }
     return null;
 }
+
+module.exports = MemberSlot;
