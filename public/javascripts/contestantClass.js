@@ -28,6 +28,10 @@ class Contestant {
     getName() {
         return this.m_firstName + " " + this.m_lastName;
     }
+
+    getId() {
+        return this.m_id;
+    }
 }
 
 function makeContestantFromCache(cache) {

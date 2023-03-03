@@ -215,52 +215,56 @@ function handleInputTemplate(e, handleFunction) {
 function initMatrix() {
 
     drawMatrixTo("join-a-team-content-matrix");
-    // sync cache 
-    // update matrix with new data
 
     $.ajax({
         type: "GET",
         url: "/member-slot/info",
     }).done(function(data) {
         updateWithMemberSlot(data);
-        for (let memberOrder = 1; memberOrder <= NUMBER_MEMBER_EACH_TEAM; memberOrder++) {
-            for (let team = 1; team <= NUMBER_OF_TEAM; team++) {
-                addEventToSlot({
-                    _team: team,
-                    _memberOrder: memberOrder,
-                    _handleFunction:
-                        function() {
-                            const newText = currentSignUpEntity.m_firstName + " " + currentSignUpEntity.m_lastName + ". Major: " + currentSignUpEntity.m_major;
-                            $.ajax({
-                                type: "POST",
-                                url: "/member-slot/assign",
-                                data: {
-                                    team: team,
-                                    memberOrder: memberOrder,
-                                    text: newText,
-                                    contestantId: currentSignUpEntity.m_id
-                                }
-                            }).done(function(msg) {
-                                if (msg === "success") {
-                                    location.reload(true);
-                                }
-                            }).fail(function(err) {
-                                if (!err) {
-                                    alert("Something went wrong when assigned slot. Try again later");
-                                    return;
-                                }
-                                alert(err.responseText);
-                            });
-                        }
-                });
-            }
-        }
+        initEventForMatrix();
     }).fail(function(err) {
         alert("No Record Found");
-    })
-
+    });
 }
 
+
+function initEventForMatrix() {
+    for (let memberOrder = 1; memberOrder <= NUMBER_MEMBER_EACH_TEAM; memberOrder++) {
+        for (let team = 1; team <= NUMBER_OF_TEAM; team++) {
+            addEventToSlot({
+                _team: team,
+                _memberOrder: memberOrder,
+                _handleFunction: function() {
+                    handleAssignTeam(team, memberOrder)
+                }
+            });
+        }
+    }
+}
+
+function handleAssignTeam(team, memberOrder) {
+    const newText = currentSignUpEntity.m_firstName + " " + currentSignUpEntity.m_lastName + ". Major: " + currentSignUpEntity.m_major;
+    $.ajax({
+        type: "POST",
+        url: "/member-slot/assign",
+        data: {
+            team: team,
+            memberOrder: memberOrder,
+            text: newText,
+            contestantId: currentSignUpEntity.m_id
+        }
+    }).done(function(msg) {
+        if (msg === "success") {
+            location.reload(true);
+        }
+    }).fail(function(err) {
+        if (!err) {
+            alert("Something went wrong when assigned slot. Try again later");
+            return;
+        }
+        alert(err.responseText);
+    });
+}
 
 function checkSignInStatus() {
     let url = window.location.href;
