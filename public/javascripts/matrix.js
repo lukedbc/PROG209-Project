@@ -33,7 +33,7 @@ function drawMatrixTo(elementId) {
 
         table.appendChild(row);
     }
-    
+
     element.appendChild(table);
 }
 

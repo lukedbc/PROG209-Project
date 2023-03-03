@@ -46,7 +46,7 @@ router.post("/sign-up", function(req, res) {
             }
             res.sendStatus(500);
         }
-    }catch(err) {
+    } catch (err) {
         res.status(500).send(err.message);
     }
 });
