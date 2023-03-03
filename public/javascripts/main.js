@@ -1,7 +1,6 @@
 const authorizeUrl = ["#join-a-team", "#signature-dishes", "#dashboard"]
 const dishStorage = new Storage("dish-data", JSON.parse(getValueFromCache("dish-data")));
 
-
 let currentSignUpEntity;
 let signInFlag = false;
 
@@ -162,12 +161,6 @@ function fillSignInInfoToPopup(model) {
     getElement("one_background").value = model.m_experience;
     getElement("one_reason").value = model.m_reason;
     getElement("one_extra").value = model.m_other;
-}
-
-function fillContactToPopup(model) {
-    getElement("one_name").value = model.m_name;
-    getElement("one_email").value = model.m_email;
-    getElement("one_message").value = model.m_message;
 }
 
 function handleSignUpListBtn(_) {
