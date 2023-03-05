@@ -22,7 +22,9 @@ function generateDefaultMemeberSlot(numberOfTeam, numberOfMemberEachTeam) {
 }
 
 function readDatabase() {
-
+    if (!fs.existsSync("databases/member-slot-records.json")) {
+        fs.writeFileSync("databases/member-slot-records.json", "");
+    }
     const jsonData = fs.readFileSync("databases/member-slot-records.json");
     try {
         let data = JSON.parse(jsonData);

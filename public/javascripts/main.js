@@ -62,6 +62,7 @@ function handleSignUp(e) {
         }).fail(function(err) {
             if (!err.responseText) {
                 alert("Something went wrong when signed up. Try it later");
+                return;
             }
             alert(err.responseText);
         });
@@ -94,6 +95,7 @@ function handleAddDish(e) {
         }).fail(function(err) {
             if (!err.responseText) {
                 alert("Something went wrong when publishing. Try it later");
+                return;
             }
             alert(err.responseText);
         });
@@ -102,9 +104,9 @@ function handleAddDish(e) {
 
 function handleShowDish(_) {
     $.ajax({
-        type: "POST",
+        type: "GET",
         url: "member-dishes/show-dish",
-        data: {contestantId: currentSignUpEntity.getId()}
+        data: { contestantId: currentSignUpEntity.getId() }
     }).done(function(dishesByUser) {
         let gallery = getElement("dish-display");
         gallery.innerHTML = "";

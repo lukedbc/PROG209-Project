@@ -5,6 +5,9 @@ const fs = require("fs");
 const SignUpModel = require('../models/sign-up-model');
 
 function readDatabase() {
+    if (!fs.existsSync("databases/sign-up-records.json")) {
+        fs.writeFileSync("databases/sign-up-records.json", "");
+    }
     const jsonData = fs.readFileSync("databases/sign-up-records.json");
     try {
         return JSON.parse(jsonData);

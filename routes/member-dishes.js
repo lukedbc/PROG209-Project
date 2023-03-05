@@ -6,17 +6,11 @@ const { monitorEventLoopDelay } = require('perf_hooks');
 const DishModel = require('../models/member-dish-model');
 
 function readDishDatabase() {
-    const jsonData = fs.readFileSync("databases/member-dish-records.json");
-    try {
-        return JSON.parse(jsonData);
-    } catch (err) {
-        return [];
+    if (!fs.existsSync("databases/member-dish-records.json")) {
+        fs.writeFileSync("databases/member-dish-records.json", "");
     }
-}
-
-function readSignUpDatabase() {
-    const jsonData = fs.readFileSync("databases/sign-up-records.json");
     try {
+        const jsonData = fs.readFileSync("databases/member-dish-records.json");
         return JSON.parse(jsonData);
     } catch (err) {
         return [];
@@ -24,13 +18,13 @@ function readSignUpDatabase() {
 }
 
 // show dish
-router.post("/show-dish", function(req, res) {
+router.get("/show-dish", function(req, res) {
     let dishRecords = readDishDatabase();
     const doesDishExistModel = dishRecords.filter(dishModel => {
-        return dishModel.m_contestantId == req.body.contestantId
+        return dishModel.m_contestantId == req.query.contestantId;
     });
 
-    if (doesDishExistModel != null) {
+    if (doesDishExistModel) {
         res.json(doesDishExistModel);
         return;
     }

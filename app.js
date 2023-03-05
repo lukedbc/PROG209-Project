@@ -2,7 +2,14 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var fs = require("fs");
 
+function createDatabasesFolder() {
+    if (!fs.existsSync("databases")) {
+        fs.mkdirSync("databases");
+    }
+}
+createDatabasesFolder();
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var memberSlotRouter = require('./routes/member-slot');
