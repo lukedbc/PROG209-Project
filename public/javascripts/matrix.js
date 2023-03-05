@@ -1,4 +1,3 @@
-// import java.awt.Color;
 const NUMBER_OF_TEAM = 3;
 const NUMBER_MEMBER_EACH_TEAM = 5;
 

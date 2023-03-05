@@ -1,5 +1,4 @@
 const authorizeUrl = ["#join-a-team", "#signature-dishes", "#dashboard"]
-const dishStorage = new Storage("dish-data", JSON.parse(getValueFromCache("dish-data")));
 
 let currentSignUpEntity;
 let signInFlag = false;
@@ -71,57 +70,67 @@ function handleSignUp(e) {
 
 function handleAddDish(e) {
     handleInputTemplate(e, function(_) {
-        let dish = new ContactDish({
+        let dish = {
             _contestantId: currentSignUpEntity.getId(),
             _title: getValueFromInputElement("title"),
             _picture: getValueFromInputElement("picture"),
             _difficulty: getValueFromInputElement("dishes-difficulty"),
             _description: getValueFromInputElement("description"),
             _recipe: getValueFromInputElement("recipe")
-        });
+        };
 
-        if (dish.isValid()) {
-            dishStorage.add(dish);
-            dishStorage.saveToCache();
-            alert("Your signature dish has been published!");
-
+        $.ajax({
+            type: "POST",
+            url: "member-dishes/add-dish",
+            data: dish
+        }).done(function(msg) {
             getElement("title").value = "";
             getElement("picture").value = "";
             getElement("dishes-difficulty").value = "";
             getElement("description").value = "";
             getElement("recipe").value = "";
-        }
+
+            alert("Your signature dish has been published!");
+        }).fail(function(err) {
+            if (!err.responseText) {
+                alert("Something went wrong when publishing. Try it later");
+            }
+            alert(err.responseText);
+        });
     })
 }
 
 function handleShowDish(_) {
-    dishStorage.syncWithCache();
-    let dishesByUser = dishStorage.filter(function(dish) {
-        return dish.m_contestantId === currentSignUpEntity.m_id;
-    });
-
-    let gallery = getElement("dish-display");
-    gallery.innerHTML = "";
-    dishesByUser.forEach(function(dish) {
-        let div = document.createElement("div");
-        div.setAttribute("id", "dish-" + dish.m_id);
-        div.setAttribute("data-rel", "popup");
-        div.setAttribute("data-transition", "pop");
-        div.innerHTML = `
-            <a href="#image-pop-up" data-rel="popup" 
-                class="ui-btn ui-corner-all ui-shadow ui-btn-inline" 
-                data-position-to="window"
-                data-transition="pop">
-                <img src=${dish.m_picture} id="img-dish-${dish.m_id} width='400' height='300'"/>
-            </a>
-        `
-        div.addEventListener("click", function(e) {
-            getElement("one_dish_title").value = dish.m_title;
-            getElement("one_dish_difficulty").value = dish.m_difficulty;
-            getElement("one_dish_description").value = dish.m_description;
-            getElement("one_dish_recipe").value = dish.m_recipe;
+    $.ajax({
+        type: "POST",
+        url: "member-dishes/show-dish",
+        data: {contestantId: currentSignUpEntity.getId()}
+    }).done(function(dishesByUser) {
+        let gallery = getElement("dish-display");
+        gallery.innerHTML = "";
+        dishesByUser.forEach(function(dish) {
+            let div = document.createElement("div");
+            div.setAttribute("id", "dish-" + dish.m_id);
+            div.setAttribute("data-rel", "popup");
+            div.setAttribute("data-transition", "pop");
+            div.innerHTML = `
+                <a href="#image-pop-up" data-rel="popup" 
+                    class="ui-btn ui-corner-all ui-shadow ui-btn-inline" 
+                    data-position-to="window"
+                    data-transition="pop">
+                    <img src=${dish.m_picture} id="img-dish-${dish.m_id} width='400' height='300'"/>
+                </a>
+            `
+            div.addEventListener("click", function(e) {
+                getElement("one_dish_title").value = dish.m_title;
+                getElement("one_dish_difficulty").value = dish.m_difficulty;
+                getElement("one_dish_description").value = dish.m_description;
+                getElement("one_dish_recipe").value = dish.m_recipe;
+            });
+            gallery.appendChild(div);
         });
-        gallery.appendChild(div);
+    }).fail(function(err) {
+        alert("No Picture Found");
     });
 }
 
