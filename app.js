@@ -3,13 +3,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var fs = require("fs");
+var config = require("./config");
 
 function createDatabasesFolder() {
-    if (!fs.existsSync("databases")) {
-        fs.mkdirSync("databases");
+    if (!fs.existsSync(config.database.rootFolder)) {
+        fs.mkdirSync(config.database.rootFolder);
     }
 }
 createDatabasesFolder();
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var memberSlotRouter = require('./routes/member-slot');

@@ -1,10 +1,10 @@
-const { warn } = require('console');
 const express = require('express');
 const router = express.Router();
-const fs = require("fs");
 
+const { warn } = require('console');
+const MemberSlot = require("../models/member-slot-model");
+const fileManager = require("../common/file-manager");
 const config = require("../config");
-const MemberSlot = require('../models/member-slot-model');
 
 function generateDefaultMemeberSlot(numberOfTeam, numberOfMemberEachTeam) {
     let result = [];
@@ -22,18 +22,14 @@ function generateDefaultMemeberSlot(numberOfTeam, numberOfMemberEachTeam) {
 }
 
 function readDatabase() {
-    if (!fs.existsSync("databases/member-slot-records.json")) {
-        fs.writeFileSync("databases/member-slot-records.json", "");
-    }
-    const jsonData = fs.readFileSync("databases/member-slot-records.json");
-    try {
-        let data = JSON.parse(jsonData);
+    return fileManager.read(config.database.memberSlotFolder(), function(rawData) {
+        let data = JSON.parse(rawData);
         return new MemberSlot(data);
-    } catch (err) {
+    }, function() {
         return new MemberSlot(
             generateDefaultMemeberSlot(config.numberOfTeam, config.numberOfMemberEachTeam)
         );
-    }
+    });
 }
 
 router.get("/info", function(req, res) {
@@ -53,7 +49,8 @@ router.post("/assign", function(req, res) {
     });
     if (result.status) {
         res.status(200).send(result.message);
-        fs.writeFileSync("databases/member-slot-records.json", JSON.stringify(memberSlot.m_data));
+        console.log(memberSlot.m_data)
+        fileManager.write(config.database.memberSlotFolder(), JSON.stringify(memberSlot.m_data));
         return;
     }
     res.status(500).send(result.message);

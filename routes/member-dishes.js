@@ -1,27 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const fs = require("fs");
-const { monitorEventLoopDelay } = require('perf_hooks');
 
-const DishModel = require('../models/member-dish-model');
+const DishModel = require("../models/member-dish-model");
+const fileManager = require("../common/file-manager");
+const config = require("../config");
 
 function readDishDatabase() {
-    if (!fs.existsSync("databases/member-dish-records.json")) {
-        fs.writeFileSync("databases/member-dish-records.json", "");
-    }
-    try {
-        const jsonData = fs.readFileSync("databases/member-dish-records.json");
-        return JSON.parse(jsonData);
-    } catch (err) {
+    return fileManager.read(config.database.dishesFolder(), function(rawData) {
+        return JSON.parse(rawData);
+    }, function() {
         return [];
-    }
+    });
 }
 
 // show dish
 router.get("/show-dish", function(req, res) {
     let dishRecords = readDishDatabase();
     const doesDishExistModel = dishRecords.filter(dishModel => {
-        return dishModel.m_contestantId == req.query.contestantId;
+        return dishModel.m_contestantId === req.query.contestantId;
     });
 
     if (doesDishExistModel) {
@@ -40,7 +36,7 @@ router.post("/add-dish", function(req, res) {
             let dishRecords = readDishDatabase();
 
             dishRecords.push(model);
-            fs.writeFileSync("databases/member-dish-records.json", JSON.stringify(dishRecords));
+            fileManager.write(config.database.dishesFolder(), JSON.stringify(dishRecords));
             res.json(model);
             return;
         }

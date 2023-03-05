@@ -1,5 +1,6 @@
 const utils = require("../common/utils");
 function AddDish({
+    _id = utils.generateId(),
     _contestantId,
     _title,
     _picture,
@@ -13,12 +14,6 @@ function AddDish({
     this.m_difficulty = _difficulty;
     this.m_description = _description;
     this.m_recipe = _recipe;
-}
-
-
-
-AddDish.prototype.getPicture = function() {
-    return this.m_picture;
 }
 
 AddDish.prototype.isValid = function() {

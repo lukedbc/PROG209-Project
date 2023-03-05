@@ -1,19 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const fs = require("fs");
 
 const SignUpModel = require('../models/sign-up-model');
+const fileManager = require("../common/file-manager");
+const config = require("../config");
 
 function readDatabase() {
-    if (!fs.existsSync("databases/sign-up-records.json")) {
-        fs.writeFileSync("databases/sign-up-records.json", "");
-    }
-    const jsonData = fs.readFileSync("databases/sign-up-records.json");
-    try {
-        return JSON.parse(jsonData);
-    } catch (err) {
+    return fileManager.read(config.database.userFolder(), function(rawData) {
+        return JSON.parse(rawData);
+    }, function() {
         return [];
-    }
+    });
 }
 
 // sign in
@@ -43,7 +40,7 @@ router.post("/sign-up", function(req, res) {
             const doesExist = records.find(record => record.m_studentId === model.m_studentId);
             if (!doesExist) {
                 records.push(model);
-                fs.writeFileSync("databases/sign-up-records.json", JSON.stringify(records));
+                fileManager.write(config.database.userFolder(), JSON.stringify(records));
                 res.json(model);
                 return;
             }
