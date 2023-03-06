@@ -8,6 +8,7 @@ function AddDish({
     _description,
     _recipe
 }) {
+    this.m_id = _id;
     this.m_contestantId = _contestantId;
     this.m_title = _title;
     this.m_picture = _picture;

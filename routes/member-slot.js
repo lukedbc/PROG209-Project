@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const { warn } = require('console');
 const MemberSlot = require("../models/member-slot-model");
 const fileManager = require("../common/file-manager");
 const config = require("../config");
@@ -49,7 +48,6 @@ router.post("/assign", function(req, res) {
     });
     if (result.status) {
         res.status(200).send(result.message);
-        console.log(memberSlot.m_data)
         fileManager.write(config.database.memberSlotFolder(), JSON.stringify(memberSlot.m_data));
         return;
     }
